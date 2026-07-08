@@ -8,3 +8,5 @@ export { StatCard } from './StatCard';
 export { TaskRow } from './TaskRow';
 export { ListItem } from './ListItem';
 export { WeatherCard } from './WeatherCard';
+export { SnapshotCard } from './SnapshotCard';
+export { QuickLogButton } from './QuickLogButton';
