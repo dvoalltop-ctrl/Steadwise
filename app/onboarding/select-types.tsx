@@ -1,20 +1,18 @@
 import { useState } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
-import { Button } from '@/components/ui';
+import { AppScreen, AppHeader, Button, TagPill } from '@/components/ui';
 import type { HomesteadType } from '@/types';
-import { colors, radius, spacing, typography } from '@/theme';
+import { spacing } from '@/theme';
 
-const HOMESTEAD_TYPES: { type: HomesteadType; label: string; icon: keyof typeof Feather.glyphMap }[] = [
-  { type: 'garden', label: 'Garden', icon: 'feather' },
-  { type: 'chickens', label: 'Chickens', icon: 'github' },
-  { type: 'goats', label: 'Goats', icon: 'gitlab' },
-  { type: 'ducks', label: 'Ducks', icon: 'twitter' },
-  { type: 'pantry', label: 'Pantry', icon: 'archive' },
-  { type: 'bees', label: 'Bees', icon: 'hexagon' },
-  { type: 'rabbits', label: 'Rabbits', icon: 'heart' },
+const HOMESTEAD_TYPES: { type: HomesteadType; label: string }[] = [
+  { type: 'garden', label: 'Garden' },
+  { type: 'chickens', label: 'Chickens' },
+  { type: 'goats', label: 'Goats' },
+  { type: 'ducks', label: 'Ducks' },
+  { type: 'pantry', label: 'Pantry' },
+  { type: 'bees', label: 'Bees' },
+  { type: 'rabbits', label: 'Rabbits' },
 ];
 
 export default function SelectTypesScreen() {
@@ -28,25 +26,27 @@ export default function SelectTypesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <AppScreen edges={['top', 'left', 'right', 'bottom']}>
       <View style={styles.container}>
-        <Text style={styles.title}>What do you tend?</Text>
-        <Text style={styles.subtitle}>Select all that apply. We'll tailor templates for you.</Text>
+        <AppHeader
+          title="What do you tend?"
+          subtitle="Select all that apply. We'll tailor templates for you."
+          onBack={() => router.back()}
+          large
+        />
 
         <View style={styles.grid}>
           {HOMESTEAD_TYPES.map((item) => {
             const isSelected = selected.includes(item.type);
             return (
-              <Pressable
+              <TagPill
                 key={item.type}
+                label={item.label}
+                selected={isSelected}
                 onPress={() => toggle(item.type)}
-                style={[styles.chip, isSelected && styles.chipSelected]}
-              >
-                <Feather name={item.icon} size={18} color={isSelected ? colors.white : colors.sage} />
-                <Text style={[styles.chipLabel, isSelected && styles.chipLabelSelected]}>
-                  {item.label}
-                </Text>
-              </Pressable>
+                size="md"
+                style={styles.chip}
+              />
             );
           })}
         </View>
@@ -61,42 +61,17 @@ export default function SelectTypesScreen() {
                 params: { name, types: selected.join(',') },
               })
             }
+            fullWidth
           />
         </View>
       </View>
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, padding: spacing.xl },
-  title: {
-    fontSize: typography.size.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: spacing.xxl,
-  },
-  subtitle: {
-    fontSize: typography.size.md,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    marginBottom: spacing.xl,
-  },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.sage,
-    backgroundColor: colors.surface,
-  },
-  chipSelected: { backgroundColor: colors.sage, borderColor: colors.sage },
-  chipLabel: { fontSize: typography.size.md, color: colors.sage, fontWeight: '500' },
-  chipLabelSelected: { color: colors.white },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.lg },
+  chip: { marginBottom: spacing.xs },
   footer: { marginTop: 'auto', marginBottom: spacing.lg },
 });

@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Link, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '@/components/ui';
+import { AppScreen, AppHeader, Button, FormInput, Card } from '@/components/ui';
 import { useAuth } from '@/providers/auth-provider';
-import { colors, radius, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@/theme';
 
 export default function SignInScreen() {
   const { signIn, isDemoMode } = useAuth();
@@ -25,76 +24,58 @@ export default function SignInScreen() {
   const skipAuth = () => router.replace('/');
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>Sign in to sync your homestead across devices.</Text>
+    <AppScreen keyboardAvoiding edges={['top', 'left', 'right', 'bottom']}>
+      <View style={styles.container}>
+        <AppHeader
+          title="Welcome back"
+          subtitle="Sign in to sync your homestead across devices."
+          large
+        />
 
         {isDemoMode && (
-          <View style={styles.demoBanner}>
+          <Card variant="warm" style={styles.demoBanner}>
             <Text style={styles.demoText}>
-              Demo mode — Supabase not configured. Continue offline.
+              Demo mode — Supabase not configured. Continue offline with sample data.
             </Text>
-            <Button title="Continue offline" variant="secondary" onPress={skipAuth} />
-          </View>
+            <Button title="Continue offline" variant="secondary" onPress={skipAuth} fullWidth />
+          </Card>
         )}
 
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
+        <FormInput
+          label="Email"
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
           placeholder="you@example.com"
-          placeholderTextColor={colors.textMuted}
         />
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
+        <FormInput
+          label="Password"
           value={password}
           onChangeText={setPassword}
           secureTextEntry
           placeholder="••••••••"
-          placeholderTextColor={colors.textMuted}
         />
 
         {error && <Text style={styles.error}>{error}</Text>}
 
-        <Button title="Sign in" onPress={handleSignIn} style={styles.button} />
+        <Button title="Sign in" onPress={handleSignIn} fullWidth style={styles.button} />
 
         <Link href="/(auth)/sign-up" style={styles.link}>
           <Text style={styles.linkText}>Create an account</Text>
         </Link>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
   container: { flex: 1, padding: spacing.xl, justifyContent: 'center' },
-  title: { fontSize: typography.size.xxl, fontWeight: '700', color: colors.textPrimary },
-  subtitle: { fontSize: typography.size.md, color: colors.textSecondary, marginTop: spacing.sm, marginBottom: spacing.xl },
-  demoBanner: { backgroundColor: colors.wheat, padding: spacing.lg, borderRadius: radius.lg, marginBottom: spacing.lg, gap: spacing.sm },
-  demoText: { fontSize: typography.size.sm, color: colors.textSecondary },
-  label: { fontSize: typography.size.sm, fontWeight: '600', color: colors.textSecondary, marginBottom: spacing.xs },
-  input: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: typography.size.md,
-    color: colors.textPrimary,
-    marginBottom: spacing.md,
-  },
-  error: { color: colors.danger, marginBottom: spacing.md },
+  demoBanner: { marginBottom: spacing.xl, gap: spacing.md },
+  demoText: { fontSize: typography.size.sm, color: colors.textSecondary, lineHeight: 20 },
+  error: { color: colors.danger, marginBottom: spacing.md, fontSize: typography.size.sm },
   button: { marginTop: spacing.md },
   link: { marginTop: spacing.lg, alignItems: 'center' },
-  linkText: { color: colors.sage, fontSize: typography.size.md },
+  linkText: { color: colors.sage, fontSize: typography.size.md, fontWeight: '500' },
 });

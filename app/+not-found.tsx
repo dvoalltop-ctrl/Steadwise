@@ -1,40 +1,19 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors } from '@/theme';
+import { router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { AppScreen, EmptyState, Button } from '@/components/ui';
 
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
-      <View style={styles.container}>
-        <Text style={styles.title}>This screen doesn't exist.</Text>
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen</Text>
-        </Link>
-      </View>
+      <Stack.Screen options={{ title: 'Not found' }} />
+      <AppScreen>
+        <EmptyState
+          icon="map"
+          title="This screen doesn't exist"
+          description="The page you're looking for may have moved or isn't built yet."
+        />
+        <Button title="Back to Today" variant="secondary" onPress={() => router.replace('/')} fullWidth />
+      </AppScreen>
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-    backgroundColor: colors.background,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.textPrimary,
-  },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
-  },
-  linkText: {
-    fontSize: 14,
-    color: colors.sage,
-  },
-});

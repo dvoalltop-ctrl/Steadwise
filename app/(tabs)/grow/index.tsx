@@ -1,8 +1,7 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { Screen } from '@/components/layout/Screen';
-import { SectionHeader, ListItem, StatCard, FAB, EmptyState } from '@/components/ui';
+import { View, StyleSheet } from 'react-native';
+import { AppScreen, SectionHeader, ListItem, StatCard, FAB, EmptyState, ListGroup } from '@/components/ui';
 import { useData } from '@/providers/data-provider';
-import { colors, spacing, typography } from '@/theme';
+import { spacing } from '@/theme';
 
 export default function GrowScreen() {
   const { areas, plantings, varieties, harvests } = useData();
@@ -12,30 +11,32 @@ export default function GrowScreen() {
 
   if (areas.length === 0) {
     return (
-      <Screen>
+      <AppScreen>
         <EmptyState
           icon="feather"
           title="Plan your first bed"
           description="Add garden areas, track plantings, and log harvests as the season unfolds."
           actionLabel="Add area"
           onAction={() => {}}
+          secondaryLabel="Browse templates"
+          onSecondary={() => {}}
         />
-      </Screen>
+      </AppScreen>
     );
   }
 
   return (
-    <Screen padded={false}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.section}>
-          <View style={styles.statsRow}>
-            <StatCard icon="feather" label="Active plantings" value={activePlantings.length} />
-            <StatCard icon="package" label="Harvests" value={harvestsThisWeek} subtitle="recent" />
-          </View>
+    <AppScreen padded={false} scrollable scrollProps={{ contentContainerStyle: styles.scroll }}>
+      <View style={styles.section}>
+        <View style={styles.statsRow}>
+          <StatCard icon="feather" label="Active plantings" value={activePlantings.length} />
+          <StatCard icon="package" label="Harvests" value={harvestsThisWeek} subtitle="recent" accent="clay" />
         </View>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Garden areas" />
+      <View style={styles.section}>
+        <SectionHeader title="Garden areas" subtitle="Beds, plots, and greenhouses" />
+        <ListGroup>
           {areas.map((area) => {
             const count = plantings.filter((p) => p.areaId === area.id).length;
             return (
@@ -48,10 +49,12 @@ export default function GrowScreen() {
               />
             );
           })}
-        </View>
+        </ListGroup>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Active plantings" />
+      <View style={styles.section}>
+        <SectionHeader title="Active plantings" subtitle="In the ground now" />
+        <ListGroup>
           {activePlantings.map((p) => {
             const variety = varieties.find((v) => v.id === p.varietyId);
             const area = areas.find((a) => a.id === p.areaId);
@@ -65,10 +68,11 @@ export default function GrowScreen() {
               />
             );
           })}
-        </View>
-      </ScrollView>
+        </ListGroup>
+      </View>
+
       <FAB onPress={() => {}} icon="plus" />
-    </Screen>
+    </AppScreen>
   );
 }
 

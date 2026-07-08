@@ -1,69 +1,44 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Screen } from '@/components/layout/Screen';
-import { colors, radius, spacing, typography } from '@/theme';
+import { AppScreen, AppHeader, QuickActionButton } from '@/components/ui';
+import { spacing } from '@/theme';
 
 const ACTIONS = [
-  { label: 'Log harvest', icon: 'package' as const, href: '/(tabs)/grow' },
-  { label: 'Log eggs', icon: 'sun' as const, href: '/(tabs)/animals' },
-  { label: 'Add expense', icon: 'dollar-sign' as const, href: '/(tabs)/money' },
-  { label: 'Add task', icon: 'check-square' as const, href: '/(tabs)/tasks/new' },
-  { label: 'Add note', icon: 'edit-3' as const, href: '/(tabs)/today' },
+  { label: 'Log harvest', icon: 'package' as const, href: '/(tabs)/grow', accent: 'sage' as const },
+  { label: 'Log eggs', icon: 'sun' as const, href: '/(tabs)/animals', accent: 'clay' as const },
+  { label: 'Add expense', icon: 'dollar-sign' as const, href: '/(tabs)/money', accent: 'wheat' as const },
+  { label: 'Add task', icon: 'check-square' as const, href: '/(tabs)/tasks/new', accent: 'sage' as const },
+  { label: 'Add note', icon: 'edit-3' as const, href: '/(tabs)/today', accent: 'wheat' as const },
 ];
 
 export default function QuickAddScreen() {
   return (
-    <Screen>
-      <Text style={styles.title}>Quick add</Text>
-      <Text style={styles.subtitle}>Fast logging for life on the homestead.</Text>
+    <AppScreen>
+      <AppHeader
+        title="Quick add"
+        subtitle="Fast logging for life on the homestead."
+        onBack={() => router.back()}
+        large
+      />
 
       <View style={styles.grid}>
         {ACTIONS.map((action) => (
-          <Pressable
+          <QuickActionButton
             key={action.label}
-            style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+            label={action.label}
+            icon={action.icon}
+            accent={action.accent}
             onPress={() => {
               router.back();
               router.push(action.href as never);
             }}
-          >
-            <Feather name={action.icon} size={24} color={colors.sage} />
-            <Text style={styles.actionLabel}>{action.label}</Text>
-          </Pressable>
+          />
         ))}
       </View>
-    </Screen>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: typography.size.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  subtitle: {
-    fontSize: typography.size.md,
-    color: colors.textSecondary,
-    marginBottom: spacing.xl,
-  },
-  grid: { gap: spacing.sm },
-  action: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  pressed: { backgroundColor: colors.gray50 },
-  actionLabel: {
-    fontSize: typography.size.lg,
-    fontWeight: '500',
-    color: colors.textPrimary,
-  },
+  grid: { gap: spacing.sm, marginTop: spacing.lg },
 });

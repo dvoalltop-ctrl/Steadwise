@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { v4 as uuidv4 } from 'uuid';
-import { Screen } from '@/components/layout/Screen';
+import { AppScreen } from '@/components/ui';
 import { TaskForm } from '@/features/tasks/components/TaskForm';
 import type { TaskFormValues } from '@/features/tasks/schemas';
 import { TaskRepository } from '@/features/tasks/repository';
@@ -45,8 +45,8 @@ export default function NewTaskScreen() {
   };
 
   return (
-    <Screen padded={false}>
+    <AppScreen padded={false}>
       <TaskForm onSubmit={handleSubmit} submitLabel="Create task" />
-    </Screen>
+    </AppScreen>
   );
 }
