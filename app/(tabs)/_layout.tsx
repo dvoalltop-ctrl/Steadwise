@@ -45,10 +45,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="tasks/index"
+        name="tasks"
         options={{
           title: 'Tasks',
           href: '/tasks',
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabIcon name="check-square" color={color} />,
         }}
       />

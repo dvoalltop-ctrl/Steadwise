@@ -1,16 +1,21 @@
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Screen } from '@/components/layout/Screen';
-import { ListItem, Card } from '@/components/ui';
+import { ListItem, Card, Button } from '@/components/ui';
 import { useAppStore } from '@/stores/app-store';
 import { useData } from '@/providers/data-provider';
+import { useAuth } from '@/providers/auth-provider';
+import { useSyncStore } from '@/sync/sync-state';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { colors, spacing, typography } from '@/theme';
 
 export default function SettingsScreen() {
   const resetOnboarding = useAppStore((s) => s.resetOnboarding);
   const useLocalDb = useAppStore((s) => s.useLocalDb);
   const setUseLocalDb = useAppStore((s) => s.setUseLocalDb);
-  const { householdName } = useData();
+  const { householdName, syncNow } = useData();
+  const { signOut, isDemoMode } = useAuth();
+  const pendingCount = useSyncStore((s) => s.pendingCount);
 
   return (
     <Screen>
@@ -40,9 +45,28 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        <ListItem title="Sync diagnostics" subtitle="Coming in Phase D" icon="refresh-cw" />
-        <ListItem title="Household members" subtitle="Coming in Phase D" icon="users" />
-        <ListItem title="About Steadwise" subtitle="v0.1.0 MVP" icon="info" />
+        <ListItem
+          title="Sync diagnostics"
+          subtitle={pendingCount > 0 ? `${pendingCount} pending` : 'All synced'}
+          icon="refresh-cw"
+          onPress={() => router.push('/settings/sync-diagnostics')}
+        />
+        <ListItem title="Household members" subtitle="Coming soon" icon="users" />
+        <ListItem title="About Steadwise" subtitle="v0.2.0" icon="info" />
+
+        {isDemoMode && (
+          <Button title="Sync now" variant="secondary" onPress={syncNow} style={styles.syncBtn} />
+        )}
+
+        <Button
+          title="Sign out"
+          variant="ghost"
+          onPress={async () => {
+            await signOut();
+            router.replace('/(auth)/sign-in');
+          }}
+          style={styles.syncBtn}
+        />
 
         <Pressable
           style={styles.reset}
@@ -97,4 +121,5 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: colors.white },
   reset: { marginTop: spacing.xxl, alignItems: 'center', padding: spacing.lg },
   resetText: { color: colors.danger, fontSize: typography.size.md },
+  syncBtn: { marginTop: spacing.lg },
 });

@@ -1,12 +1,11 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Task, TaskStatus } from '@/types';
 import { getDatabase } from '@/db/client';
-import { syncQueue } from '@/sync/sync-queue';
+import { enqueueSync, mapBaseRecord, nowIso } from '@/lib/repositories/sync-helper';
 
 function rowToTask(row: Record<string, unknown>): Task {
   return {
-    id: row.id as string,
-    householdId: row.household_id as string,
+    ...mapBaseRecord(row),
     title: row.title as string,
     description: (row.description as string) ?? null,
     status: row.status as TaskStatus,
@@ -21,12 +20,6 @@ function rowToTask(row: Record<string, unknown>): Task {
     completedAt: (row.completed_at as string) ?? null,
     recurrenceRule: (row.recurrence_rule as string) ?? null,
     season: (row.season as Task['season']) ?? null,
-    createdBy: (row.created_by as string) ?? null,
-    createdAt: row.created_at as string,
-    updatedAt: row.updated_at as string,
-    deletedAt: (row.deleted_at as string) ?? null,
-    localSyncStatus: row.local_sync_status as Task['localSyncStatus'],
-    lastSyncedAt: (row.last_synced_at as string) ?? null,
   };
 }
 
@@ -44,6 +37,14 @@ export class TaskRepository {
       [householdId]
     );
     return rows.map(rowToTask);
+  }
+
+  async getById(id: string): Promise<Task | null> {
+    const row = await this.db.getFirstAsync<Record<string, unknown>>(
+      `SELECT * FROM tasks WHERE id = ? AND deleted_at IS NULL`,
+      [id]
+    );
+    return row ? rowToTask(row) : null;
   }
 
   async getDueToday(householdId: string, today: string): Promise<Task[]> {
@@ -64,24 +65,6 @@ export class TaskRepository {
     return rows.map(rowToTask);
   }
 
-  async completeTask(id: string): Promise<void> {
-    const now = new Date().toISOString();
-    await this.db.runAsync(
-      `UPDATE tasks SET status = 'done', completed_at = ?, updated_at = ?,
-       local_sync_status = 'pending' WHERE id = ?`,
-      [now, now, id]
-    );
-    syncQueue.enqueue({
-      id: `sync-${id}-${now}`,
-      householdId: '',
-      entityType: 'tasks',
-      entityId: id,
-      operation: 'update',
-      payload: JSON.stringify({ status: 'done', completedAt: now }),
-      createdAt: now,
-    });
-  }
-
   async create(task: Task): Promise<void> {
     await this.db.runAsync(
       `INSERT INTO tasks (id, household_id, title, description, status, priority, due_date,
@@ -92,8 +75,67 @@ export class TaskRepository {
         task.id, task.householdId, task.title, task.description, task.status, task.priority,
         task.dueDate, task.dueTime, task.assignedTo, task.routineId, task.areaId,
         JSON.stringify(task.tags), task.recurrenceRule, task.season,
-        task.createdBy, task.createdAt, task.updatedAt, task.localSyncStatus,
+        task.createdBy, task.createdAt, task.updatedAt, 'pending',
       ]
     );
+    await enqueueSync(this.db, {
+      householdId: task.householdId,
+      entityType: 'tasks',
+      entityId: task.id,
+      operation: 'insert',
+      payload: task as unknown as Record<string, unknown>,
+    });
+  }
+
+  async update(task: Task): Promise<void> {
+    const now = nowIso();
+    await this.db.runAsync(
+      `UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?,
+        due_date = ?, due_time = ?, area_id = ?, recurrence_rule = ?, season = ?,
+        updated_at = ?, local_sync_status = 'pending' WHERE id = ?`,
+      [
+        task.title, task.description, task.status, task.priority,
+        task.dueDate, task.dueTime, task.areaId, task.recurrenceRule, task.season,
+        now, task.id,
+      ]
+    );
+    await enqueueSync(this.db, {
+      householdId: task.householdId,
+      entityType: 'tasks',
+      entityId: task.id,
+      operation: 'update',
+      payload: { ...task, updatedAt: now },
+    });
+  }
+
+  async completeTask(id: string, householdId: string): Promise<void> {
+    const now = nowIso();
+    await this.db.runAsync(
+      `UPDATE tasks SET status = 'done', completed_at = ?, updated_at = ?,
+       local_sync_status = 'pending' WHERE id = ?`,
+      [now, now, id]
+    );
+    await enqueueSync(this.db, {
+      householdId,
+      entityType: 'tasks',
+      entityId: id,
+      operation: 'update',
+      payload: { status: 'done', completedAt: now, updatedAt: now },
+    });
+  }
+
+  async softDelete(id: string, householdId: string): Promise<void> {
+    const now = nowIso();
+    await this.db.runAsync(
+      `UPDATE tasks SET deleted_at = ?, updated_at = ?, local_sync_status = 'pending' WHERE id = ?`,
+      [now, now, id]
+    );
+    await enqueueSync(this.db, {
+      householdId,
+      entityType: 'tasks',
+      entityId: id,
+      operation: 'delete',
+      payload: { deletedAt: now },
+    });
   }
 }

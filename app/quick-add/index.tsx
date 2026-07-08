@@ -8,7 +8,7 @@ const ACTIONS = [
   { label: 'Log harvest', icon: 'package' as const, href: '/(tabs)/grow' },
   { label: 'Log eggs', icon: 'sun' as const, href: '/(tabs)/animals' },
   { label: 'Add expense', icon: 'dollar-sign' as const, href: '/(tabs)/money' },
-  { label: 'Add task', icon: 'check-square' as const, href: '/(tabs)/tasks' },
+  { label: 'Add task', icon: 'check-square' as const, href: '/(tabs)/tasks/new' },
   { label: 'Add note', icon: 'edit-3' as const, href: '/(tabs)/today' },
 ];
 

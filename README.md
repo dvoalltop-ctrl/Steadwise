@@ -32,9 +32,9 @@ docs/          PRD, architecture, schema, roadmap, routes
 | Phase | Status | Focus |
 |-------|--------|-------|
 | A | ✅ | Shell, navigation, mocks, empty states |
-| B | 🟡 | Local SQLite, tasks, today dashboard |
-| C | ⬜ | Garden, animals, pantry, finance |
-| D | ⬜ | Auth, household, Supabase sync |
+| B | ✅ | Local SQLite, tasks, today dashboard |
+| C | ✅ | Garden, animals, pantry, finance repositories |
+| D | 🟡 | Auth, household, Supabase sync (engine + RLS) |
 | E | ⬜ | Polish, tests, export |
 
 ## Scripts

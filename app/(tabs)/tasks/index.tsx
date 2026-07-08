@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { View, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { router } from 'expo-router';
 import { Screen } from '@/components/layout/Screen';
 import { TaskRow, FAB, EmptyState, Badge } from '@/components/ui';
 import { useData } from '@/providers/data-provider';
 import { getTodayDateString } from '@/features/tasks/utils/recurrence';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
 type Filter = 'today' | 'overdue' | 'upcoming' | 'all';
 
@@ -49,7 +50,7 @@ export default function TasksScreen() {
             title="No tasks here"
             description="Add your first chore or routine to stay on top of homestead life."
             actionLabel="Add task"
-            onAction={() => {}}
+            onAction={() => router.push('/(tabs)/tasks/new')}
           />
         ) : (
           filtered.map((task) => (
@@ -57,11 +58,12 @@ export default function TasksScreen() {
               key={task.id}
               task={task}
               onToggle={() => completeTask(task.id)}
+              onPress={() => router.push(`/(tabs)/tasks/${task.id}`)}
             />
           ))
         )}
       </ScrollView>
-      <FAB onPress={() => {}} />
+      <FAB onPress={() => router.push('/(tabs)/tasks/new')} />
     </Screen>
   );
 }
