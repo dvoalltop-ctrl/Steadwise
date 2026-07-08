@@ -1,45 +1,63 @@
 # Steadwise
 
-Mobile-first, offline-first homestead management built with Expo, SQLite, and Supabase.
+**Run your homestead with confidence.**
 
-## Stack
+Mobile-first homesteading manager for small-scale and hobby homesteaders. Built with Expo, React Native, TypeScript, and offline-first SQLite.
 
-- Expo React Native (TypeScript strict)
-- expo-sqlite for local storage
-- Supabase for auth and cloud sync (optional)
-
-## Getting started
+## Quick start
 
 ```bash
 npm install
-cp .env.example .env
 npm start
 ```
 
-Add your Supabase project URL and anon key to `.env` when you are ready for sync.
-
-## Scripts
-
-- `npm start` — Expo dev server
-- `npm run typecheck` — TypeScript check
-- `npm run android` / `ios` / `web` — platform targets
+Press `i` for iOS simulator, `a` for Android emulator, or scan the QR code with Expo Go.
 
 ## Project structure
 
 ```
-app/                 Expo Router screens
+app/           Expo Router screens
 src/
-  components/        Shared UI
-  features/          Feature screens and hooks
-  lib/db/            SQLite schema, migrations, repositories
-  lib/supabase/      Auth and sync skeleton
-  providers/         App-wide context
-  theme/             Colors and spacing
-supabase/            Remote schema reference
+  components/  Shared UI kit
+  features/    Domain modules (tasks, garden, etc.)
+  db/          SQLite migrations & seed data
+  sync/        Offline sync queue
+  mocks/       Demo data for Phase A
+  theme/       Design tokens
+docs/          PRD, architecture, schema, roadmap, routes
 ```
 
-## First screen
+## Development phases
 
-**Tasks** supports offline create, complete, and delete with loading, empty, and error states.
+| Phase | Status | Focus |
+|-------|--------|-------|
+| A | ✅ | Shell, navigation, mocks, empty states |
+| B | ✅ | Local SQLite, tasks, today dashboard |
+| C | ✅ | Garden, animals, pantry, finance repositories |
+| D | 🟡 | Auth, household, Supabase sync (engine + RLS) |
+| E | ⬜ | Polish, tests, export |
 
-Other tabs (Garden, Animals, Pantry) are placeholders. Local tables are already created for future features.
+## Scripts
+
+- `npm start` — Expo dev server
+- `npm test` — Run unit tests
+- `npm run typecheck` — TypeScript check
+
+## Documentation
+
+- [PRD](docs/PRD.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Schema](docs/SCHEMA.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Routes](docs/ROUTES.md)
+
+## Demo templates
+
+After onboarding, seed data includes:
+
+- Beginner Backyard Garden
+- Laying Hen Flock
+- Pantry Starter
+- Weekly Chore Routines
+
+Toggle **Mock** vs **Local DB** in Settings to compare data sources.

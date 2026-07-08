@@ -1,113 +1,81 @@
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  type ViewStyle,
+  type TextStyle,
+} from 'react-native';
+import { colors, radius, spacing, typography } from '@/theme';
 
-import { spacing } from '@/src/theme/spacing';
-import { useThemeColors } from '@/src/theme/useThemeColors';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
-  label: string;
+  title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   disabled?: boolean;
+  style?: ViewStyle;
 }
 
 export function Button({
-  label,
+  title,
   onPress,
   variant = 'primary',
+  size = 'md',
   disabled = false,
+  style,
 }: ButtonProps) {
-  const theme = useThemeColors();
-
-  const backgroundColor =
-    variant === 'primary'
-      ? theme.sage
-      : variant === 'danger'
-        ? theme.error
-        : theme.creamDark;
-
-  const textColor = variant === 'secondary' ? theme.earth : '#FFFFFF';
-
   return (
     <Pressable
-      disabled={disabled}
       onPress={onPress}
+      disabled={disabled}
       style={({ pressed }) => [
-        styles.button,
-        {
-          backgroundColor,
-          opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
-          borderColor: theme.border,
-          borderWidth: variant === 'secondary' ? 1 : 0,
-        },
-      ]}>
-      <Text style={[styles.label, { color: textColor }]}>{label}</Text>
+        styles.base,
+        sizeStyles[size],
+        variantStyles[variant],
+        pressed && styles.pressed,
+        disabled && styles.disabled,
+        style,
+      ]}
+    >
+      <Text style={[styles.text, textVariantStyles[variant]]}>{title}</Text>
     </Pressable>
   );
 }
 
-interface InputProps {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-}
-
-export function Input({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  multiline = false,
-}: InputProps) {
-  const theme = useThemeColors();
-
-  return (
-    <View style={styles.field}>
-      <Text style={[styles.label, { color: theme.earth }]}>{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={theme.earthMuted}
-        multiline={multiline}
-        style={[
-          styles.input,
-          multiline && styles.multiline,
-          {
-            color: theme.earth,
-            backgroundColor: theme.white,
-            borderColor: theme.border,
-          },
-        ]}
-      />
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  button: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: 12,
+  base: {
+    borderRadius: radius.md,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  label: {
-    fontSize: 16,
+  pressed: { opacity: 0.85 },
+  disabled: { opacity: 0.5 },
+  text: {
+    fontSize: typography.size.md,
     fontWeight: '600',
   },
-  field: {
-    gap: spacing.xs,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: 16,
-  },
-  multiline: {
-    minHeight: 96,
-    textAlignVertical: 'top',
-  },
 });
+
+const sizeStyles = StyleSheet.create({
+  sm: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md },
+  md: { paddingVertical: spacing.md, paddingHorizontal: spacing.lg },
+  lg: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl },
+});
+
+const variantStyles = StyleSheet.create({
+  primary: { backgroundColor: colors.sage },
+  secondary: { backgroundColor: colors.wheat, borderWidth: 1, borderColor: colors.border },
+  ghost: { backgroundColor: 'transparent' },
+  danger: { backgroundColor: colors.danger },
+});
+
+const textVariantStyles: Record<ButtonVariant, TextStyle> = {
+  primary: { color: colors.white },
+  secondary: { color: colors.bark },
+  ghost: { color: colors.sage },
+  danger: { color: colors.white },
+};

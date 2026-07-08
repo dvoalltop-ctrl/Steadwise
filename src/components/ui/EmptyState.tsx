@@ -1,40 +1,68 @@
-import { StyleSheet, Text, View } from 'react-native';
-
-import { spacing } from '@/src/theme/spacing';
-import { useThemeColors } from '@/src/theme/useThemeColors';
+import { View, Text, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { Button } from './Button';
+import { colors, spacing, typography } from '@/theme';
 
 interface EmptyStateProps {
+  icon: keyof typeof Feather.glyphMap;
   title: string;
   description: string;
+  actionLabel?: string;
+  onAction?: () => void;
 }
 
-export function EmptyState({ title, description }: EmptyStateProps) {
-  const theme = useThemeColors();
-
+export function EmptyState({
+  icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <Text style={[styles.title, { color: theme.earth }]}>{title}</Text>
-      <Text style={[styles.description, { color: theme.earthMuted }]}>{description}</Text>
+      <View style={styles.iconWrap}>
+        <Feather name={icon} size={32} color={colors.sageLight} />
+      </View>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.description}>{description}</Text>
+      {actionLabel && onAction && (
+        <Button title={actionLabel} onPress={onAction} style={styles.button} />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.xxxl,
+    paddingHorizontal: spacing.xl,
+  },
+  iconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: colors.wheat,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.lg,
-    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 20,
+    fontSize: typography.size.lg,
     fontWeight: '600',
+    color: colors.textPrimary,
     textAlign: 'center',
+    marginBottom: spacing.sm,
   },
   description: {
-    fontSize: 16,
+    fontSize: typography.size.md,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: typography.size.md * typography.lineHeight.relaxed,
+    marginBottom: spacing.lg,
+  },
+  button: {
+    marginTop: spacing.sm,
+    minWidth: 160,
   },
 });
