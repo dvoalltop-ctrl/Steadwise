@@ -27,7 +27,9 @@ export function SettingsScreen() {
             style={[styles.row, i < ROWS.length - 1 && styles.divider]}
           >
             <Feather name={row.icon} size={18} color={colors.sageDark} />
-            <Text style={styles.label}>{row.label}</Text>
+            <View style={styles.labelWrap}>
+              <Text style={styles.label}>{row.label}</Text>
+            </View>
             <Text style={styles.value}>{row.value}</Text>
           </View>
         ))}
@@ -44,6 +46,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   divider: { borderBottomWidth: 1, borderBottomColor: colors.borderLight },
-  label: { flex: 1, fontSize: typography.size.md, color: colors.textPrimary },
+  labelWrap: { flex: 1, minWidth: 0 },
+  label: { fontSize: typography.size.md, color: colors.textPrimary },
   value: { fontSize: typography.size.md, color: colors.textSecondary },
 });
