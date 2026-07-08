@@ -1,24 +1,25 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Screen } from '@/components/layout/Screen';
 import {
+  AppScreen,
+  AppHeader,
   SectionHeader,
   StatCard,
   TaskRow,
   WeatherCard,
   FAB,
   Card,
-  Badge,
+  StatusBadge,
+  QuickActionButton,
+  ListGroup,
 } from '@/components/ui';
 import { useData, useTodayTasks, useDashboardStats } from '@/providers/data-provider';
-import { colors, spacing, typography } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 export default function TodayScreen() {
   const { householdName, weather, completeTask, harvests, animalLogs } = useData();
   const { dueToday, overdue } = useTodayTasks();
   const { eggsToday, harvestThisWeek, lowStockCount } = useDashboardStats();
-
-  const greeting = getGreeting();
 
   const recentActivity = [
     ...harvests.slice(0, 2).map((h) => ({
@@ -34,107 +35,114 @@ export default function TodayScreen() {
   ].slice(0, 4);
 
   return (
-    <Screen padded={false}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.header}>
-          <Text style={styles.greeting}>{greeting}</Text>
-          <Text style={styles.homestead}>{householdName}</Text>
-        </View>
+    <AppScreen padded={false} scrollable scrollProps={{ contentContainerStyle: styles.scroll }}>
+      <View style={styles.header}>
+        <AppHeader
+          greeting={getGreeting()}
+          title={householdName}
+          large
+        />
+      </View>
 
+      <View style={styles.section}>
+        <WeatherCard weather={weather} />
+      </View>
+
+      <View style={[styles.section, styles.statsRow]}>
+        <StatCard icon="sun" label="Eggs today" value={eggsToday} accent="clay" />
+        <StatCard icon="package" label="Harvest (wk)" value={`${harvestThisWeek}`} subtitle="lbs" />
+        <StatCard icon="alert-circle" label="Low stock" value={lowStockCount} accent="neutral" />
+      </View>
+
+      {overdue.length > 0 && (
         <View style={styles.section}>
-          <WeatherCard weather={weather} />
-        </View>
-
-        <View style={[styles.section, styles.statsRow]}>
-          <StatCard icon="sun" label="Eggs today" value={eggsToday} />
-          <StatCard icon="package" label="Harvest (wk)" value={`${harvestThisWeek} lbs`} />
-          <StatCard icon="alert-circle" label="Low stock" value={lowStockCount} />
-        </View>
-
-        {overdue.length > 0 && (
-          <View style={styles.section}>
-            <SectionHeader title="Overdue" />
-            <Card padded={false} style={styles.listCard}>
-              {overdue.map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  onToggle={() => completeTask(task.id)}
-                />
-              ))}
-            </Card>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <SectionHeader
-            title="Due today"
-            action={{ label: 'See all', onPress: () => router.push('/(tabs)/tasks') }}
-          />
-          {dueToday.length === 0 ? (
-            <Card>
-              <Text style={styles.emptyText}>All caught up for today.</Text>
-            </Card>
-          ) : (
-            <Card padded={false} style={styles.listCard}>
-              {dueToday.slice(0, 5).map((task) => (
-                <TaskRow
-                  key={task.id}
-                  task={task}
-                  onToggle={() => completeTask(task.id)}
-                />
-              ))}
-            </Card>
-          )}
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader title="Quick actions" />
-          <View style={styles.quickGrid}>
-            {QUICK_ACTIONS.map((action) => (
-              <Card
-                key={action.label}
-                style={styles.quickCard}
-                padded
-              >
-                <Text
-                  style={styles.quickLabel}
-                  onPress={() => router.push(action.href as never)}
-                >
-                  {action.label}
-                </Text>
-              </Card>
+          <SectionHeader title="Overdue" subtitle="Needs attention soon" />
+          <ListGroup>
+            {overdue.map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                onToggle={() => completeTask(task.id)}
+              />
             ))}
-          </View>
+          </ListGroup>
         </View>
+      )}
 
-        <View style={styles.section}>
-          <SectionHeader title="Recent activity" />
-          <Card padded={false}>
-            {recentActivity.length === 0 ? (
-              <Text style={[styles.emptyText, styles.padded]}>No recent logs yet.</Text>
-            ) : (
-              recentActivity.map((item) => (
-                <View key={item.id} style={styles.activityRow}>
-                  <Text style={styles.activityText}>{item.text}</Text>
-                  <Badge label={item.time} variant="default" />
-                </View>
-              ))
-            )}
+      <View style={styles.section}>
+        <SectionHeader
+          title="Due today"
+          action={{ label: 'See all', onPress: () => router.push('/(tabs)/tasks') }}
+        />
+        {dueToday.length === 0 ? (
+          <Card variant="warm">
+            <StatusBadge label="All caught up" tone="success" dot />
           </Card>
+        ) : (
+          <ListGroup>
+            {dueToday.slice(0, 5).map((task) => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                onToggle={() => completeTask(task.id)}
+              />
+            ))}
+          </ListGroup>
+        )}
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Quick actions" subtitle="Log something in a tap" />
+        <View style={styles.quickList}>
+          {QUICK_ACTIONS.map((action) => (
+            <QuickActionButton
+              key={action.label}
+              label={action.label}
+              icon={action.icon}
+              accent={action.accent}
+              onPress={() => router.push(action.href as never)}
+            />
+          ))}
         </View>
-      </ScrollView>
+      </View>
+
+      <View style={styles.section}>
+        <SectionHeader title="Recent activity" />
+        <Card padded={false}>
+          {recentActivity.length === 0 ? (
+            <View style={styles.emptyActivity}>
+              <StatusBadge label="No logs yet" tone="neutral" />
+            </View>
+          ) : (
+            recentActivity.map((item, index) => (
+              <View
+                key={item.id}
+                style={[
+                  styles.activityRow,
+                  index === recentActivity.length - 1 && styles.activityRowLast,
+                ]}
+              >
+                <View style={styles.activityTextWrap}>
+                  <View style={styles.activityDot} />
+                  <Text style={styles.activityText}>{item.text}</Text>
+                </View>
+                <StatusBadge label={item.time} tone="clay" />
+              </View>
+            ))
+          )}
+        </Card>
+      </View>
 
       <FAB onPress={() => router.push('/quick-add')} />
-    </Screen>
+    </AppScreen>
   );
 }
 
 const QUICK_ACTIONS = [
-  { label: 'Log harvest', href: '/(tabs)/grow' },
-  { label: 'Log eggs', href: '/(tabs)/animals' },
-  { label: 'Add expense', href: '/(tabs)/money' },
-  { label: 'Add task', href: '/(tabs)/tasks' },
+  { label: 'Log harvest', icon: 'package' as const, href: '/(tabs)/grow', accent: 'sage' as const },
+  { label: 'Log eggs', icon: 'sun' as const, href: '/(tabs)/animals', accent: 'clay' as const },
+  { label: 'Add expense', icon: 'dollar-sign' as const, href: '/(tabs)/money', accent: 'wheat' as const },
+  { label: 'Add task', icon: 'check-square' as const, href: '/(tabs)/tasks/new', accent: 'sage' as const },
 ];
 
 function getGreeting(): string {
@@ -146,53 +154,11 @@ function getGreeting(): string {
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 100 },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-  },
-  greeting: {
-    fontSize: typography.size.sm,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  homestead: {
-    fontSize: typography.size.xxl,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    marginTop: spacing.xs,
-  },
-  section: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  listCard: { overflow: 'hidden' },
-  emptyText: {
-    fontSize: typography.size.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    padding: spacing.lg,
-  },
-  padded: { padding: spacing.lg },
-  quickGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  quickCard: {
-    width: '47%',
-    minHeight: 56,
-    justifyContent: 'center',
-  },
-  quickLabel: {
-    fontSize: typography.size.md,
-    fontWeight: '500',
-    color: colors.sageDark,
-  },
+  header: { paddingHorizontal: spacing.lg },
+  section: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
+  statsRow: { flexDirection: 'row', gap: spacing.sm },
+  quickList: { gap: spacing.sm },
+  emptyActivity: { padding: spacing.xl, alignItems: 'center' },
   activityRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -201,10 +167,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
+  activityRowLast: { borderBottomWidth: 0 },
+  activityTextWrap: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: spacing.md,
+    gap: spacing.md,
+  },
+  activityDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.sage,
+  },
   activityText: {
     flex: 1,
-    fontSize: typography.size.md,
+    fontSize: 15,
     color: colors.textPrimary,
-    marginRight: spacing.md,
+    fontWeight: '500',
   },
 });

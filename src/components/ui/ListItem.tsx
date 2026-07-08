@@ -1,6 +1,6 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors, spacing, typography } from '@/theme';
+import { colors, radius, spacing, typography, shadows } from '@/theme';
 
 interface ListItemProps {
   title: string;
@@ -8,13 +8,22 @@ interface ListItemProps {
   icon?: keyof typeof Feather.glyphMap;
   rightText?: string;
   onPress?: () => void;
+  showChevron?: boolean;
 }
 
-export function ListItem({ title, subtitle, icon, rightText, onPress }: ListItemProps) {
+export function ListItem({
+  title,
+  subtitle,
+  icon,
+  rightText,
+  onPress,
+  showChevron = true,
+}: ListItemProps) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.row, pressed && onPress && styles.pressed]}
     >
       {icon && (
         <View style={styles.iconWrap}>
@@ -26,27 +35,40 @@ export function ListItem({ title, subtitle, icon, rightText, onPress }: ListItem
         {subtitle && <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>}
       </View>
       {rightText && <Text style={styles.right}>{rightText}</Text>}
-      {onPress && <Feather name="chevron-right" size={18} color={colors.gray300} />}
+      {onPress && showChevron && (
+        <Feather name="chevron-right" size={18} color={colors.gray300} />
+      )}
     </Pressable>
   );
 }
 
+export function ListGroup({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  return <View style={[styles.group, style]}>{children}</View>;
+}
+
 const styles = StyleSheet.create({
+  group: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    overflow: 'hidden',
+    ...shadows.sm,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
   pressed: { backgroundColor: colors.gray50 },
   iconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.wheat,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.sageMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md,
@@ -54,7 +76,7 @@ const styles = StyleSheet.create({
   content: { flex: 1 },
   title: {
     fontSize: typography.size.md,
-    fontWeight: '500',
+    fontWeight: '600',
     color: colors.textPrimary,
   },
   subtitle: {
@@ -64,6 +86,7 @@ const styles = StyleSheet.create({
   },
   right: {
     fontSize: typography.size.sm,
+    fontWeight: '500',
     color: colors.textMuted,
     marginRight: spacing.sm,
   },

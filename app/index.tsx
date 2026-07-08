@@ -1,8 +1,7 @@
-import { View, ActivityIndicator } from 'react-native';
 import { Redirect } from 'expo-router';
+import { AppScreen, LoadingState } from '@/components/ui';
 import { useAppStore } from '@/stores/app-store';
 import { useAuth } from '@/providers/auth-provider';
-import { colors } from '@/theme';
 
 export default function Index() {
   const onboardingComplete = useAppStore((s) => s.onboardingComplete);
@@ -10,9 +9,9 @@ export default function Index() {
 
   if (!initialized || loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator color={colors.sage} />
-      </View>
+      <AppScreen padded={false}>
+        <LoadingState message="Preparing your homestead…" />
+      </AppScreen>
     );
   }
 

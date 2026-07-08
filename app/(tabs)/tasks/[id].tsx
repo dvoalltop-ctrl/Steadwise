@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Screen } from '@/components/layout/Screen';
+import {
+  AppScreen,
+  TaskRow,
+  Button,
+  LoadingState,
+  ErrorState,
+  ListGroup,
+  StatusBadge,
+} from '@/components/ui';
 import { TaskForm } from '@/features/tasks/components/TaskForm';
-import { TaskRow, Button } from '@/components/ui';
 import type { TaskFormValues } from '@/features/tasks/schemas';
 import { TaskRepository } from '@/features/tasks/repository';
 import { useData } from '@/providers/data-provider';
@@ -58,23 +65,29 @@ export default function TaskDetailScreen() {
 
   if (loading) {
     return (
-      <Screen>
-        <ActivityIndicator color={colors.sage} />
-      </Screen>
+      <AppScreen padded={false}>
+        <LoadingState message="Loading task…" />
+      </AppScreen>
     );
   }
 
   if (!task) {
     return (
-      <Screen>
-        <Text style={styles.notFound}>Task not found</Text>
-      </Screen>
+      <AppScreen>
+        <ErrorState
+          title="Task not found"
+          message="This task may have been deleted or moved."
+          onRetry={() => router.back()}
+          retryLabel="Go back"
+          icon="search"
+        />
+      </AppScreen>
     );
   }
 
   if (editing) {
     return (
-      <Screen padded={false}>
+      <AppScreen padded={false}>
         <TaskForm
           defaultValues={{
             title: task.title,
@@ -89,34 +102,65 @@ export default function TaskDetailScreen() {
           onSubmit={handleUpdate}
           submitLabel="Update task"
         />
-      </Screen>
+      </AppScreen>
     );
   }
 
   return (
-    <Screen padded={false}>
-      <TaskRow
-        task={task}
-        onToggle={() => completeTask(task.id)}
-      />
-      <View style={styles.actions}>
-        <Button title="Edit" variant="secondary" onPress={() => setEditing(true)} />
-        <Button title="Delete" variant="danger" onPress={handleDelete} />
+    <AppScreen padded={false} scrollable>
+      <ListGroup style={styles.listGroup}>
+        <TaskRow task={task} onToggle={() => completeTask(task.id)} />
+      </ListGroup>
+
+      <View style={styles.meta}>
+        <StatusBadge label={task.status} tone={task.status === 'done' ? 'success' : 'neutral'} dot />
+        <StatusBadge label={task.priority} tone={task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'clay'} />
       </View>
+
       {task.description && (
-        <Text style={styles.description}>{task.description}</Text>
+        <View style={styles.descriptionWrap}>
+          <Text style={styles.descriptionLabel}>Notes</Text>
+          <Text style={styles.description}>{task.description}</Text>
+        </View>
       )}
-    </Screen>
+
+      <View style={styles.actions}>
+        <Button title="Edit" variant="secondary" onPress={() => setEditing(true)} style={styles.actionBtn} />
+        <Button title="Delete" variant="danger" onPress={handleDelete} style={styles.actionBtn} />
+      </View>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  notFound: { fontSize: typography.size.lg, color: colors.textSecondary },
-  actions: { flexDirection: 'row', gap: spacing.md, padding: spacing.lg },
-  description: {
-    padding: spacing.lg,
-    fontSize: typography.size.md,
+  listGroup: { margin: spacing.lg },
+  meta: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  descriptionWrap: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  descriptionLabel: {
+    fontSize: typography.size.sm,
+    fontWeight: '600',
     color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  description: {
+    fontSize: typography.size.md,
+    color: colors.textPrimary,
     lineHeight: typography.size.md * 1.5,
   },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  actionBtn: { flex: 1 },
 });

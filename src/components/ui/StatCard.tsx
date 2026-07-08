@@ -8,12 +8,18 @@ interface StatCardProps {
   label: string;
   value: string | number;
   subtitle?: string;
+  accent?: 'sage' | 'clay' | 'neutral';
 }
 
-export function StatCard({ icon, label, value, subtitle }: StatCardProps) {
+export function StatCard({ icon, label, value, subtitle, accent = 'sage' }: StatCardProps) {
+  const accentColor = accent === 'clay' ? colors.clay : accent === 'neutral' ? colors.soil : colors.sage;
+  const iconBg = accent === 'clay' ? colors.clayMuted : accent === 'neutral' ? colors.gray100 : colors.sageMuted;
+
   return (
     <Card style={styles.card}>
-      <Feather name={icon} size={18} color={colors.sage} />
+      <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+        <Feather name={icon} size={18} color={accentColor} />
+      </View>
       <Text style={styles.value}>{value}</Text>
       <Text style={styles.label}>{label}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
@@ -27,19 +33,28 @@ const styles = StyleSheet.create({
     minWidth: 100,
     gap: spacing.xs,
   },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
   value: {
     fontSize: typography.size.xl,
     fontWeight: '700',
     color: colors.textPrimary,
-    marginTop: spacing.xs,
+    letterSpacing: -0.3,
   },
   label: {
     fontSize: typography.size.xs,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: typography.size.xs,
     color: colors.textMuted,
+    marginTop: 2,
   },
 });

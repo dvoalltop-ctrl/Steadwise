@@ -1,13 +1,12 @@
-import { ScrollView, View, StyleSheet } from 'react-native';
-import { Screen } from '@/components/layout/Screen';
-import { SectionHeader, ListItem, StatCard, FAB, EmptyState } from '@/components/ui';
+import { View, StyleSheet } from 'react-native';
+import { AppScreen, SectionHeader, ListItem, StatCard, FAB, EmptyState, ListGroup } from '@/components/ui';
 import { useData, useDashboardStats } from '@/providers/data-provider';
 import { spacing } from '@/theme';
 
 const SPECIES_ICONS = {
-  chicken: 'github' as const,
-  goat: 'gitlab' as const,
-  duck: 'twitter' as const,
+  chicken: 'sun' as const,
+  goat: 'triangle' as const,
+  duck: 'droplet' as const,
   rabbit: 'heart' as const,
   bee: 'hexagon' as const,
   other: 'circle' as const,
@@ -19,27 +18,27 @@ export default function AnimalsScreen() {
 
   if (animalGroups.length === 0) {
     return (
-      <Screen>
+      <AppScreen>
         <EmptyState
-          icon="github"
+          icon="heart"
           title="Add your first flock or herd"
           description="Track feeding, health, and daily production like eggs or milk."
           actionLabel="Add group"
           onAction={() => {}}
         />
-      </Screen>
+      </AppScreen>
     );
   }
 
   return (
-    <Screen padded={false}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.section}>
-          <StatCard icon="sun" label="Eggs today" value={eggsToday} subtitle="laying flock" />
-        </View>
+    <AppScreen padded={false} scrollable scrollProps={{ contentContainerStyle: styles.scroll }}>
+      <View style={styles.section}>
+        <StatCard icon="sun" label="Eggs today" value={eggsToday} subtitle="laying flock" accent="clay" />
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Groups" />
+      <View style={styles.section}>
+        <SectionHeader title="Groups" subtitle="Flocks, herds, and hives" />
+        <ListGroup>
           {animalGroups.map((group) => (
             <ListItem
               key={group.id}
@@ -49,10 +48,12 @@ export default function AnimalsScreen() {
               rightText={group.status}
             />
           ))}
-        </View>
+        </ListGroup>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Recent logs" />
+      <View style={styles.section}>
+        <SectionHeader title="Recent logs" subtitle="Production and care notes" />
+        <ListGroup>
           {animalLogs.slice(0, 5).map((log) => (
             <ListItem
               key={log.id}
@@ -62,10 +63,11 @@ export default function AnimalsScreen() {
               rightText={log.quantity ? `${log.quantity} ${log.unit}` : undefined}
             />
           ))}
-        </View>
-      </ScrollView>
+        </ListGroup>
+      </View>
+
       <FAB onPress={() => {}} />
-    </Screen>
+    </AppScreen>
   );
 }
 

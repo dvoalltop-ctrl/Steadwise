@@ -1,6 +1,7 @@
 import { Tabs, router } from 'expo-router';
-import { Pressable, Platform, type ColorValue } from 'react-native';
+import { Platform, type ColorValue } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { IconButton } from '@/components/ui';
 import { colors } from '@/theme';
 
 type FeatherIcon = keyof typeof Feather.glyphMap;
@@ -21,18 +22,20 @@ export default function TabLayout() {
           paddingBottom: Platform.OS === 'ios' ? 4 : 8,
           height: Platform.OS === 'ios' ? 88 : 64,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
         headerStyle: { backgroundColor: colors.background },
-        headerTintColor: colors.bark,
-        headerTitleStyle: { fontWeight: '600' },
+        headerTintColor: colors.charcoal,
+        headerTitleStyle: { fontWeight: '700', fontSize: 17 },
+        headerShadowVisible: false,
         headerRight: () => (
-          <Pressable
+          <IconButton
+            icon="settings"
             onPress={() => router.push('/settings')}
-            style={{ marginRight: 16 }}
-            hitSlop={8}
-          >
-            <Feather name="settings" size={22} color={colors.barkMuted} />
-          </Pressable>
+            variant="ghost"
+            size="sm"
+            style={{ marginRight: 8 }}
+            accessibilityLabel="Settings"
+          />
         ),
       }}
     >
@@ -66,7 +69,7 @@ export default function TabLayout() {
         options={{
           title: 'Animals',
           href: '/animals',
-          tabBarIcon: ({ color }) => <TabIcon name="github" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="heart" color={color} />,
         }}
       />
       <Tabs.Screen

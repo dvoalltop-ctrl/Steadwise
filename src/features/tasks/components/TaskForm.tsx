@@ -1,11 +1,16 @@
-import { View, Text, TextInput, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui';
+import { Button, FormInput, TextArea, DateField, SelectField } from '@/components/ui';
 import { taskFormSchema, type TaskFormValues } from '@/features/tasks/schemas';
-import { colors, radius, spacing, typography } from '@/theme';
+import { spacing } from '@/theme';
 
-const PRIORITIES = ['low', 'normal', 'high', 'urgent'] as const;
+const PRIORITY_OPTIONS = [
+  { value: 'low' as const, label: 'Low' },
+  { value: 'normal' as const, label: 'Normal' },
+  { value: 'high' as const, label: 'High' },
+  { value: 'urgent' as const, label: 'Urgent' },
+];
 
 interface TaskFormProps {
   defaultValues?: Partial<TaskFormValues>;
@@ -34,71 +39,64 @@ export function TaskForm({ defaultValues, onSubmit, submitLabel = 'Save task' }:
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Title</Text>
+    <ScrollView
+      contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxxl }}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
       <Controller
         control={control}
         name="title"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={styles.input}
+          <FormInput
+            label="Title"
             placeholder="What needs doing?"
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
+            error={errors.title?.message}
           />
         )}
       />
-      {errors.title && <Text style={styles.error}>{errors.title.message}</Text>}
 
-      <Text style={styles.label}>Description</Text>
       <Controller
         control={control}
         name="description"
         render={({ field: { onChange, onBlur, value } }) => (
-          <TextInput
-            style={[styles.input, styles.textArea]}
+          <TextArea
+            label="Description"
             placeholder="Optional details"
             value={value ?? ''}
             onChangeText={onChange}
             onBlur={onBlur}
-            multiline
+            rows={3}
           />
         )}
       />
 
-      <Text style={styles.label}>Due date</Text>
       <Controller
         control={control}
         name="dueDate"
         render={({ field: { onChange, value } }) => (
-          <TextInput
-            style={styles.input}
-            placeholder="YYYY-MM-DD"
+          <DateField
+            label="Due date"
             value={value ?? ''}
             onChangeText={onChange}
+            error={errors.dueDate?.message}
           />
         )}
       />
 
-      <Text style={styles.label}>Priority</Text>
       <Controller
         control={control}
         name="priority"
         render={({ field: { onChange, value } }) => (
-          <View style={styles.chipRow}>
-            {PRIORITIES.map((p) => (
-              <Pressable
-                key={p}
-                onPress={() => onChange(p)}
-                style={[styles.chip, value === p && styles.chipActive]}
-              >
-                <Text style={[styles.chipText, value === p && styles.chipTextActive]}>
-                  {p}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <SelectField
+            label="Priority"
+            value={value}
+            options={PRIORITY_OPTIONS}
+            onChange={onChange}
+          />
         )}
       />
 
@@ -106,43 +104,10 @@ export function TaskForm({ defaultValues, onSubmit, submitLabel = 'Save task' }:
         title={isSubmitting ? 'Saving…' : submitLabel}
         onPress={handleSubmit(onSubmit)}
         disabled={isSubmitting}
-        style={styles.submit}
+        loading={isSubmitting}
+        fullWidth
+        style={{ marginTop: spacing.xl }}
       />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: spacing.lg, paddingBottom: spacing.xxxl },
-  label: {
-    fontSize: typography.size.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    marginTop: spacing.md,
-  },
-  input: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: typography.size.md,
-    color: colors.textPrimary,
-  },
-  textArea: { minHeight: 80, textAlignVertical: 'top' },
-  error: { color: colors.danger, fontSize: typography.size.sm, marginTop: spacing.xs },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  chip: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipActive: { backgroundColor: colors.sage, borderColor: colors.sage },
-  chipText: { fontSize: typography.size.sm, color: colors.textSecondary, textTransform: 'capitalize' },
-  chipTextActive: { color: colors.white },
-  submit: { marginTop: spacing.xl },
-});

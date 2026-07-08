@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { View, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Screen } from '@/components/layout/Screen';
-import { TaskRow, FAB, EmptyState, Badge } from '@/components/ui';
+import { AppScreen, TaskRow, FAB, EmptyState, TagPill, ListGroup } from '@/components/ui';
 import { useData } from '@/providers/data-provider';
 import { getTodayDateString } from '@/features/tasks/utils/recurrence';
 import { spacing } from '@/theme';
@@ -29,20 +28,21 @@ export default function TasksScreen() {
   });
 
   return (
-    <Screen padded={false}>
+    <AppScreen padded={false}>
       <View style={styles.filters}>
         {FILTERS.map((f) => (
-          <Pressable key={f.key} onPress={() => setFilter(f.key)}>
-            <Badge
-              label={f.label}
-              variant={filter === f.key ? 'success' : 'default'}
-            />
-          </Pressable>
+          <TagPill
+            key={f.key}
+            label={f.label}
+            selected={filter === f.key}
+            onPress={() => setFilter(f.key)}
+          />
         ))}
       </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
-        onTouchEnd={() => {}}
+        showsVerticalScrollIndicator={false}
       >
         {filtered.length === 0 ? (
           <EmptyState
@@ -53,18 +53,23 @@ export default function TasksScreen() {
             onAction={() => router.push('/(tabs)/tasks/new')}
           />
         ) : (
-          filtered.map((task) => (
-            <TaskRow
-              key={task.id}
-              task={task}
-              onToggle={() => completeTask(task.id)}
-              onPress={() => router.push(`/(tabs)/tasks/${task.id}`)}
-            />
-          ))
+          <View style={styles.listWrap}>
+            <ListGroup>
+              {filtered.map((task) => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onToggle={() => completeTask(task.id)}
+                  onPress={() => router.push(`/(tabs)/tasks/${task.id}`)}
+                />
+              ))}
+            </ListGroup>
+          </View>
         )}
       </ScrollView>
+
       <FAB onPress={() => router.push('/(tabs)/tasks/new')} />
-    </Screen>
+    </AppScreen>
   );
 }
 
@@ -82,5 +87,6 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     flexWrap: 'wrap',
   },
-  scroll: { paddingBottom: 100 },
+  scroll: { paddingBottom: 100, flexGrow: 1 },
+  listWrap: { paddingHorizontal: spacing.lg },
 });

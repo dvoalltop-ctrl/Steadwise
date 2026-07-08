@@ -1,6 +1,5 @@
-import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import { Screen } from '@/components/layout/Screen';
-import { Card, ListItem, FAB, EmptyState, SectionHeader } from '@/components/ui';
+import { View, Text, StyleSheet } from 'react-native';
+import { AppScreen, Card, ListItem, FAB, EmptyState, SectionHeader, ListGroup } from '@/components/ui';
 import { useData } from '@/providers/data-provider';
 import { colors, spacing, typography } from '@/theme';
 
@@ -30,7 +29,7 @@ export default function MoneyScreen() {
 
   if (expenses.length === 0 && incomes.length === 0) {
     return (
-      <Screen>
+      <AppScreen>
         <EmptyState
           icon="dollar-sign"
           title="Track your first expense"
@@ -38,37 +37,39 @@ export default function MoneyScreen() {
           actionLabel="Add expense"
           onAction={() => {}}
         />
-      </Screen>
+      </AppScreen>
     );
   }
 
   return (
-    <Screen padded={false}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <View style={styles.section}>
-          <Card>
-            <Text style={styles.monthLabel}>This month</Text>
-            <View style={styles.summaryRow}>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>${totalIncome.toFixed(2)}</Text>
-                <Text style={styles.summaryLabel}>Income</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={styles.summaryValue}>${totalExpenses.toFixed(2)}</Text>
-                <Text style={styles.summaryLabel}>Expenses</Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={[styles.summaryValue, net >= 0 ? styles.positive : styles.negative]}>
-                  ${net.toFixed(2)}
-                </Text>
-                <Text style={styles.summaryLabel}>Net</Text>
-              </View>
+    <AppScreen padded={false} scrollable scrollProps={{ contentContainerStyle: styles.scroll }}>
+      <View style={styles.section}>
+        <Card variant="elevated">
+          <Text style={styles.monthLabel}>This month</Text>
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, styles.positive]}>${totalIncome.toFixed(0)}</Text>
+              <Text style={styles.summaryLabel}>Income</Text>
             </View>
-          </Card>
-        </View>
+            <View style={styles.divider} />
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryValue}>${totalExpenses.toFixed(0)}</Text>
+              <Text style={styles.summaryLabel}>Expenses</Text>
+            </View>
+            <View style={styles.divider} />
+            <View style={styles.summaryItem}>
+              <Text style={[styles.summaryValue, net >= 0 ? styles.positive : styles.negative]}>
+                ${net.toFixed(0)}
+              </Text>
+              <Text style={styles.summaryLabel}>Net</Text>
+            </View>
+          </View>
+        </Card>
+      </View>
 
-        <View style={styles.section}>
-          <SectionHeader title="Recent transactions" />
+      <View style={styles.section}>
+        <SectionHeader title="Recent transactions" />
+        <ListGroup>
           {transactions.map((tx) => (
             <ListItem
               key={tx.id}
@@ -76,12 +77,14 @@ export default function MoneyScreen() {
               subtitle={tx.date}
               icon={tx.type === 'income' ? 'trending-up' : 'trending-down'}
               rightText={`${tx.amount >= 0 ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}`}
+              showChevron={false}
             />
           ))}
-        </View>
-      </ScrollView>
+        </ListGroup>
+      </View>
+
       <FAB onPress={() => {}} />
-    </Screen>
+    </AppScreen>
   );
 }
 
@@ -90,23 +93,34 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
   monthLabel: {
     fontSize: typography.size.sm,
+    fontWeight: '600',
     color: colors.textSecondary,
-    marginBottom: spacing.md,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.lg,
   },
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   summaryItem: { alignItems: 'center', flex: 1 },
+  divider: {
+    width: 1,
+    height: 40,
+    backgroundColor: colors.borderLight,
+  },
   summaryValue: {
-    fontSize: typography.size.lg,
+    fontSize: typography.size.xl,
     fontWeight: '700',
     color: colors.textPrimary,
+    letterSpacing: -0.3,
   },
   summaryLabel: {
     fontSize: typography.size.xs,
     color: colors.textSecondary,
     marginTop: spacing.xs,
+    fontWeight: '500',
   },
   positive: { color: colors.success },
   negative: { color: colors.danger },
