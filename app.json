@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Steadwise",
+    "slug": "steadwise",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "steadwise",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.steadwise.mobile"
+    },
+    "android": {
+      "package": "app.steadwise.mobile"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FAF7F0",
+          "resizeMode": "contain"
+        }
+      ]
+    ]
+  }
+}
