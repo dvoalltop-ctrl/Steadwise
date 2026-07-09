@@ -193,12 +193,22 @@ export function useTodayTasks() {
 }
 
 export function useDashboardStats() {
-  const { harvests, animalLogs, pantryItems } = useData();
+  const { harvests, animalLogs, pantryItems, tasks, expenses } = useData();
   const today = getTodayDateString();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+  const month = today.slice(0, 7);
 
   const eggsToday = animalLogs
     .filter((l) => l.logType === 'production' && l.unit === 'eggs' && l.loggedAt.startsWith(today))
+    .reduce((sum, l) => sum + (l.quantity ?? 0), 0);
+
+  const eggsThisWeek = animalLogs
+    .filter(
+      (l) =>
+        l.logType === 'production' &&
+        l.unit === 'eggs' &&
+        l.loggedAt.slice(0, 10) >= weekAgo
+    )
     .reduce((sum, l) => sum + (l.quantity ?? 0), 0);
 
   const harvestThisWeek = harvests
@@ -209,5 +219,18 @@ export function useDashboardStats() {
     (p) => p.lowStockThreshold !== null && p.quantity <= p.lowStockThreshold
   ).length;
 
-  return { eggsToday, harvestThisWeek, lowStockCount };
+  const openTasksCount = tasks.filter((t) => t.status === 'open').length;
+
+  const monthlySpend = expenses
+    .filter((e) => e.expenseDate.startsWith(month))
+    .reduce((sum, e) => sum + e.amount, 0);
+
+  return {
+    eggsToday,
+    eggsThisWeek,
+    harvestThisWeek,
+    lowStockCount,
+    openTasksCount,
+    monthlySpend,
+  };
 }
