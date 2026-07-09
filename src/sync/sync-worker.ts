@@ -1,5 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
-import { getDatabase } from '@/db/client';
+import { getDatabase } from '@/lib/db/client';
 import { getSupabase, isSupabaseConfigured } from '@/lib/supabase';
 import { removeSyncQueueItem } from '@/lib/repositories/sync-helper';
 import { syncQueue } from '@/sync/sync-queue';
@@ -7,9 +7,9 @@ import { shouldSkipPush } from '@/sync/conflict-resolver';
 import { useSyncStore } from '@/sync/sync-state';
 
 const SYNCABLE_TABLES = [
-  'tasks', 'areas', 'crop_varieties', 'plantings', 'harvests',
-  'animal_groups', 'animal_logs', 'pantry_items', 'expenses', 'incomes',
-  'households', 'memberships',
+  'tasks', 'garden_areas', 'plantings', 'harvests',
+  'animal_groups', 'animal_logs', 'pantry_items', 'finance_transactions',
+  'households', 'notes',
 ] as const;
 
 export class SyncWorker {
@@ -66,7 +66,7 @@ export class SyncWorker {
         }
 
         await this.db.runAsync(
-          `UPDATE ${table} SET local_sync_status = 'synced', last_synced_at = ? WHERE id = ?`,
+          `UPDATE ${table} SET sync_status = 'synced', last_synced_at = ? WHERE id = ?`,
           [new Date().toISOString(), item.entityId]
         ).catch(() => {});
 

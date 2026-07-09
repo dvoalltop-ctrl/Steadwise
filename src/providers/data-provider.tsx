@@ -6,7 +6,7 @@ import { GardenRepository } from '@/features/garden/repository';
 import { AnimalsRepository } from '@/features/animals/repository';
 import { PantryRepository } from '@/features/pantry/repository';
 import { FinanceRepository } from '@/features/finance/repository';
-import { getDatabase } from '@/db/client';
+import { initializeDatabase } from '@/lib/db/client';
 import { runSyncCycle } from '@/sync/sync-worker';
 import { useSyncStore } from '@/sync/sync-state';
 import { isSupabaseConfigured } from '@/lib/supabase';
@@ -146,7 +146,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function init() {
       if (useLocalDb) {
-        await getDatabase();
+        await initializeDatabase();
       }
       await refreshAll();
       setReady(true);

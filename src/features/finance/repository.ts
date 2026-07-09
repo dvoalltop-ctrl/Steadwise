@@ -1,51 +1,7 @@
-import type { SQLiteDatabase } from 'expo-sqlite';
 import type { Expense, Income, ExpenseCategory, IncomeCategory } from '@/types';
-import { getDatabase } from '@/db/client';
-import { enqueueSync, mapBaseRecord, nowIso } from '@/lib/repositories/sync-helper';
-
-function rowToExpense(row: Record<string, unknown>): Expense {
-  return {
-    ...mapBaseRecord(row),
-    categoryId: row.category_id as string,
-    amount: row.amount as number,
-    currency: row.currency as string,
-    expenseDate: row.expense_date as string,
-    vendor: (row.vendor as string) ?? null,
-    description: (row.description as string) ?? null,
-    enterprise: row.enterprise as Expense['enterprise'],
-  };
-}
-
-function rowToIncome(row: Record<string, unknown>): Income {
-  return {
-    ...mapBaseRecord(row),
-    categoryId: row.category_id as string,
-    amount: row.amount as number,
-    currency: row.currency as string,
-    incomeDate: row.income_date as string,
-    source: (row.source as string) ?? null,
-    description: (row.description as string) ?? null,
-    enterprise: row.enterprise as Income['enterprise'],
-  };
-}
-
-function rowToExpenseCategory(row: Record<string, unknown>): ExpenseCategory {
-  return {
-    ...mapBaseRecord(row),
-    name: row.name as string,
-    icon: (row.icon as string) ?? null,
-    sortOrder: row.sort_order as number,
-  };
-}
-
-function rowToIncomeCategory(row: Record<string, unknown>): IncomeCategory {
-  return {
-    ...mapBaseRecord(row),
-    name: row.name as string,
-    icon: (row.icon as string) ?? null,
-    sortOrder: row.sort_order as number,
-  };
-}
+import { financeRepository } from '@/lib/db/repositories/finance.repository';
+import { syncQueueRepository } from '@/lib/db/repositories/sync-queue.repository';
+import { mockData } from '@/mocks';
 
 export interface MonthlySummary {
   totalIncome: number;
@@ -54,42 +10,27 @@ export interface MonthlySummary {
 }
 
 export class FinanceRepository {
-  constructor(private db: SQLiteDatabase) {}
-
   static async create(): Promise<FinanceRepository> {
-    return new FinanceRepository(await getDatabase());
+    return new FinanceRepository();
   }
 
   async getExpenses(householdId: string): Promise<Expense[]> {
-    const rows = await this.db.getAllAsync<Record<string, unknown>>(
-      `SELECT * FROM expenses WHERE household_id = ? AND deleted_at IS NULL ORDER BY expense_date DESC`,
-      [householdId]
-    );
-    return rows.map(rowToExpense);
+    return financeRepository.listExpenses(householdId);
   }
 
   async getIncomes(householdId: string): Promise<Income[]> {
-    const rows = await this.db.getAllAsync<Record<string, unknown>>(
-      `SELECT * FROM incomes WHERE household_id = ? AND deleted_at IS NULL ORDER BY income_date DESC`,
-      [householdId]
-    );
-    return rows.map(rowToIncome);
+    return financeRepository.listIncomes(householdId);
   }
 
+  /** Categories remain mock-only until a categories table is added. */
   async getExpenseCategories(householdId: string): Promise<ExpenseCategory[]> {
-    const rows = await this.db.getAllAsync<Record<string, unknown>>(
-      `SELECT * FROM expense_categories WHERE household_id = ? AND deleted_at IS NULL ORDER BY sort_order`,
-      [householdId]
-    );
-    return rows.map(rowToExpenseCategory);
+    void householdId;
+    return mockData.expenseCategories;
   }
 
   async getIncomeCategories(householdId: string): Promise<IncomeCategory[]> {
-    const rows = await this.db.getAllAsync<Record<string, unknown>>(
-      `SELECT * FROM income_categories WHERE household_id = ? AND deleted_at IS NULL ORDER BY sort_order`,
-      [householdId]
-    );
-    return rows.map(rowToIncomeCategory);
+    void householdId;
+    return mockData.incomeCategories;
   }
 
   async getMonthlySummary(householdId: string, yearMonth: string): Promise<MonthlySummary> {
@@ -103,19 +44,11 @@ export class FinanceRepository {
   }
 
   async createExpense(expense: Expense): Promise<void> {
-    await this.db.runAsync(
-      `INSERT INTO expenses (id, household_id, category_id, amount, currency, expense_date,
-        vendor, description, enterprise, created_by, created_at, updated_at, local_sync_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [
-        expense.id, expense.householdId, expense.categoryId, expense.amount, expense.currency,
-        expense.expenseDate, expense.vendor, expense.description, expense.enterprise,
-        expense.createdBy, expense.createdAt, expense.updatedAt,
-      ]
-    );
-    await enqueueSync(this.db, {
+    const cat = mockData.expenseCategories.find((c) => c.id === expense.categoryId);
+    await financeRepository.createExpense(expense, cat?.name);
+    await syncQueueRepository.enqueue({
       householdId: expense.householdId,
-      entityType: 'expenses',
+      entityType: 'finance_transactions',
       entityId: expense.id,
       operation: 'insert',
       payload: expense as unknown as Record<string, unknown>,
@@ -123,19 +56,11 @@ export class FinanceRepository {
   }
 
   async createIncome(income: Income): Promise<void> {
-    await this.db.runAsync(
-      `INSERT INTO incomes (id, household_id, category_id, amount, currency, income_date,
-        source, description, enterprise, created_by, created_at, updated_at, local_sync_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
-      [
-        income.id, income.householdId, income.categoryId, income.amount, income.currency,
-        income.incomeDate, income.source, income.description, income.enterprise,
-        income.createdBy, income.createdAt, income.updatedAt,
-      ]
-    );
-    await enqueueSync(this.db, {
+    const cat = mockData.incomeCategories.find((c) => c.id === income.categoryId);
+    await financeRepository.createIncome(income, cat?.name);
+    await syncQueueRepository.enqueue({
       householdId: income.householdId,
-      entityType: 'incomes',
+      entityType: 'finance_transactions',
       entityId: income.id,
       operation: 'insert',
       payload: income as unknown as Record<string, unknown>,
